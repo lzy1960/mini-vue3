@@ -1,4 +1,9 @@
 import { extend } from '../shared/index';
+
+
+let activeEffect
+let shouldTrack = false
+
 class ReactiveEffect {
   private _fn
   deps = []
@@ -13,7 +18,10 @@ class ReactiveEffect {
 
   run () {
     activeEffect = this
-    return this._fn()
+    shouldTrack = true
+    const fn = this._fn()
+    shouldTrack = false
+    return fn
   }
 
   stop () {
@@ -31,10 +39,13 @@ function cleanupEffect (effect) {
   effect.deps.forEach(dep => {
     dep.delete(effect)
   });
+  effect.deps.length = 0
 }
 
 const targetMap = new Map()
 export const track = (target, key) => {
+  if (!isTracking()) return
+
   // target -> key -> dep
   let depsMap = targetMap.get(target)
   if (!depsMap) {
@@ -48,10 +59,13 @@ export const track = (target, key) => {
     depsMap.set(key, dep)
   }
 
-  if (!activeEffect) return
-
+  if (dep.has(activeEffect)) return
   dep.add(activeEffect)
   activeEffect.deps.push(dep)
+}
+
+function isTracking () {
+  return shouldTrack && activeEffect !== undefined
 }
 
 export const trigger = (target, key) => {
@@ -67,7 +81,6 @@ export const trigger = (target, key) => {
   }
 }
 
-let activeEffect
 export const effect = (fn, options = {}) => {
   const _effect = new ReactiveEffect(fn, options.scheduler)
   extend(_effect, options)
