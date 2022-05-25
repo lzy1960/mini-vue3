@@ -1,3 +1,4 @@
+import { extend } from '../shared/index';
 class ReactiveEffect {
   private _fn
   deps = []
@@ -47,6 +48,8 @@ export const track = (target, key) => {
     depsMap.set(key, dep)
   }
 
+  if (!activeEffect) return
+
   dep.add(activeEffect)
   activeEffect.deps.push(dep)
 }
@@ -67,7 +70,7 @@ export const trigger = (target, key) => {
 let activeEffect
 export const effect = (fn, options = {}) => {
   const _effect = new ReactiveEffect(fn, options.scheduler)
-  _effect.onStop = options.onStop
+  extend(_effect, options)
 
   _effect.run()
 
