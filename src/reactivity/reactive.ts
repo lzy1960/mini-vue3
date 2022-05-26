@@ -1,5 +1,5 @@
 import { track, trigger } from './effect';
-import { mutibleHandlers, ReactiveFlags, readonlyHandlers } from './baseHandlers';
+import { mutibleHandlers, ReactiveFlags, readonlyHandlers, shallowReadonlyHandlers } from './baseHandlers';
 
 export const reactive = (raw) => {
   return new Proxy(raw, mutibleHandlers)
@@ -7,6 +7,10 @@ export const reactive = (raw) => {
 
 export const readonly = (raw) => {
   return createActiveObject(raw, readonlyHandlers)
+};
+
+export const shallowReadonly = (raw) => {
+  return createActiveObject(raw, shallowReadonlyHandlers)
 };
 
 export const isReactive = (value) => {
