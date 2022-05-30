@@ -1,4 +1,6 @@
 import { createComponentInstance, setupConponent } from './component';
+import { isObject } from '../shared/index';
+
 export const render = (vnode, container) => {
   patch(vnode, container)
 }
@@ -6,7 +8,9 @@ export const render = (vnode, container) => {
 export const patch = (vnode, container) => {
   // 处理组件
 
+  // TODO:
   // 判断是不是element
+  // processElement()
   processComponent(vnode, container)
 };
 
@@ -27,3 +31,4 @@ function setupRenderEffect (instance, container) {
   // vnode -> element -> mountElement
   patch(subTree, container)
 }
+

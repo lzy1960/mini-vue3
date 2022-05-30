@@ -39,7 +39,6 @@ function handleSetupResult (instance: any, setupResult: any) {
 function finishComponentSetup (instance: any) {
   const component = instance.type
 
-  if (component.render) {
-    instance.render = component.render
-  }
+  // 假设用户必须写render
+  instance.render = component.render
 }
