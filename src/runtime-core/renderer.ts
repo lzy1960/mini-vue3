@@ -10,16 +10,41 @@ export const patch = (vnode, container) => {
 
   // TODO:
   // 判断是不是element
-  // processElement()
-  processComponent(vnode, container)
+  if (typeof vnode.type === 'string') {
+    processElement(vnode, container)
+  } else if (isObject(vnode.type)) {
+    processComponent(vnode, container)
+  }
 };
+
+function processElement (vnode: any, container: any) {
+  mountElement(vnode, container)
+}
 
 function processComponent (vnode: any, container: any) {
   mountComponent(vnode, container)
 }
 
-function mountComponent (vnode, container) {
-  const instance = createComponentInstance(vnode)
+function mountElement (vnode: any, container: any) {
+  // string array
+  const { props, children } = vnode
+  const el = document.createElement(vnode.type)
+  if (typeof children === 'string') {
+    el.textContent = children
+  } else if (Array.isArray(children)) {
+    mountChildren(children, el)
+  }
+
+  for (const key in props) {
+    const val = props[key]
+    el.setAttribute(key, Array.isArray(val) ? val.join(' ') : val)
+  }
+
+  container.append(el)
+}
+
+function mountComponent (initialVNode, container) {
+  const instance = createComponentInstance(initialVNode)
   setupConponent(instance)
   setupRenderEffect(instance, container)
 }
@@ -30,5 +55,11 @@ function setupRenderEffect (instance, container) {
   // vnode -> patch
   // vnode -> element -> mountElement
   patch(subTree, container)
+}
+
+function mountChildren (vnode, container) {
+  vnode.forEach(child => {
+    patch(child, container)
+  })
 }
 
