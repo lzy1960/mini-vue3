@@ -10,7 +10,7 @@ export function createComponentInstance (vnode) {
   return component
 }
 
-export const setupConponent = (instance) => {
+export const setupComponent = (instance) => {
   // TODO:
   // initProps
   // initSlots

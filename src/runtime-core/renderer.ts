@@ -1,4 +1,4 @@
-import { createComponentInstance, setupConponent } from './component';
+import { createComponentInstance, setupComponent } from './component';
 import { isObject } from '../shared/index';
 
 export const render = (vnode, container) => {
@@ -45,7 +45,7 @@ function mountElement (vnode: any, container: any) {
 
 function mountComponent (initialVNode, container) {
   const instance = createComponentInstance(initialVNode)
-  setupConponent(instance)
+  setupComponent(instance)
   setupRenderEffect(instance, initialVNode, container)
 }
 
