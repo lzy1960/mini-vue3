@@ -8,3 +8,4 @@ export const hasChanged = (val, newValue) => {
   return !Object.is(newValue, val)
 };
 
+export const hasOwn = (val, key) => key in val

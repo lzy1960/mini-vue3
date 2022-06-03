@@ -1,4 +1,5 @@
 import { h } from "../../lib/guide-mini-vue3.esm.js"
+import { Foo } from "./Foo.js"
 
 window.self = null
 export const App = {
@@ -23,7 +24,8 @@ export const App = {
             console.log('鼠标点下去了')
           }
         }, 'hi'),
-        h('p', { class: 'blue' }, this.msg)
+        h('p', { class: 'blue' }, this.msg),
+        h(Foo, { count: 1 })
       ]
     )
   },
