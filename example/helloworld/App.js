@@ -25,7 +25,15 @@ export const App = {
           }
         }, 'hi'),
         h('p', { class: 'blue' }, this.msg),
-        h(Foo, { count: 1 })
+        h(Foo, {
+          count: 1,
+          onAdd (a, b) {
+            console.log('onAdd', a, b)
+          },
+          onAddFoo (a, b) {
+            console.log('onAddFoo')
+          }
+        })
       ]
     )
   },
