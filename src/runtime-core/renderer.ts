@@ -3,6 +3,7 @@ import { isObject } from '../shared/index';
 import { ShapeFlags } from '../shared/ShapeFlags';
 import { Fragment, Text } from './vnode';
 import { createAppAPI } from './createApp';
+import { effect } from '../reactivity/effect';
 
 export const createRenderer = (options) => {
   const {
@@ -12,52 +13,65 @@ export const createRenderer = (options) => {
   } = options
 
   const render = (vnode, container, parentComponent) => {
-    patch(vnode, container, parentComponent)
+    patch(null, vnode, container, parentComponent)
   }
 
-  const patch = (vnode, container, parentComponent) => {
+  // n1 -> 老的
+  // n2 -> 新的
+  const patch = (n1, n2, container, parentComponent) => {
     //ShapeFlags 
     // vnode -> flag
 
     // 判断是不是element
-    const { type, shapeFlag } = vnode
+    const { type, shapeFlag } = n2
 
     // Fragment -> 只渲染所有的children
     switch (type) {
       case Fragment:
-        processFragment(vnode, container, parentComponent)
+        processFragment(n1, n2, container, parentComponent)
         break;
 
       case Text:
-        processText(vnode, container)
+        processText(n1, n2, container)
         break;
 
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(vnode, container, parentComponent)
+          processElement(n1, n2, container, parentComponent)
         } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-          processComponent(vnode, container, parentComponent)
+          processComponent(n1, n2, container, parentComponent)
         }
         break;
     }
   };
 
-  function processFragment (vnode: any, container: any, parentComponent: any) {
-    mountChildren(vnode, container, parentComponent)
+  function processFragment (n1, n2: any, container: any, parentComponent: any) {
+    mountChildren(n2, container, parentComponent)
   }
 
-  function processText (vnode: any, container: any) {
-    const { children } = vnode
-    const textNode = vnode.el = document.createTextNode(children)
+  function processText (n1, n2: any, container: any) {
+    const { children } = n2
+    const textNode = n2.el = document.createTextNode(children)
     container.append(textNode)
   }
 
-  function processElement (vnode: any, container: any, parentComponent: any) {
-    mountElement(vnode, container, parentComponent)
+  function processElement (n1, n2: any, container: any, parentComponent: any) {
+    if (!n1) {
+      mountElement(n2, container, parentComponent)
+    } else {
+      patchElement(n1, n2, parentComponent)
+    }
   }
 
-  function processComponent (vnode: any, container: any, parentComponent: any) {
-    mountComponent(vnode, container, parentComponent)
+  function patchElement (n1, n2, container) {
+    console.log('patchElement')
+    console.log(n1)
+    console.log(n2)
+    console.log(n2)
+  }
+
+  function processComponent (n1, n2: any, container: any, parentComponent: any) {
+    mountComponent(n2, container, parentComponent)
   }
 
   function mountElement (vnode: any, container: any, parentComponent: any) {
@@ -87,20 +101,38 @@ export const createRenderer = (options) => {
   }
 
   function setupRenderEffect (instance, initialVNode, container) {
-    const { proxy } = instance
-    const subTree = instance.render.call(proxy)
+    effect(() => {
+      if (!instance.isMounted) {
+        console.log('init')
+        const { proxy } = instance
+        const subTree = instance.subTree = instance.render.call(proxy)
+        console.log(subTree)
 
-    // vnode -> patch
-    // vnode -> element -> mountElement
-    patch(subTree, container, instance)
+        // vnode -> patch
+        // vnode -> element -> mountElement
+        patch(null, subTree, container, instance)
 
-    // element -> mount
-    initialVNode.el = subTree.el
+        // element -> mount
+        initialVNode.el = subTree.el
+
+        instance.isMounted = true
+      } else {
+        console.log('update')
+        const { proxy } = instance
+        const subTree = instance.render.call(proxy)
+        const prevSubTree = instance.subTree
+        instance.subTree = subTree
+        console.log('current', subTree)
+        console.log('prev', prevSubTree)
+
+        patch(prevSubTree, subTree, container, instance)
+      }
+    })
   }
 
   function mountChildren (vnode, container, parentComponent) {
     vnode.children.forEach(child => {
-      patch(child, container, parentComponent)
+      patch(null, child, container, parentComponent)
     })
   }
 
