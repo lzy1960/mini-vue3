@@ -9,7 +9,9 @@ export const createRenderer = (options) => {
   const {
     patchProp: hostPatchProp,
     insert: hostInsert,
-    createElement: hostCreateElement
+    createElement: hostCreateElement,
+    remove: hostRemove,
+    setElementText: hostSetElementText,
   } = options
 
   const render = (vnode, container, parentComponent) => {
@@ -59,11 +61,11 @@ export const createRenderer = (options) => {
     if (!n1) {
       mountElement(n2, container, parentComponent)
     } else {
-      patchElement(n1, n2, parentComponent)
+      patchElement(n1, n2, container, parentComponent)
     }
   }
 
-  function patchElement (n1, n2, container) {
+  function patchElement (n1, n2, container, parentComponent) {
     console.log('patchElement')
     console.log(n1)
     console.log(n2)
@@ -72,7 +74,48 @@ export const createRenderer = (options) => {
 
     const oldProps = n1.props || EMPTY_OBJ
     const newProps = n2.props || EMPTY_OBJ
+    patchChildren(n1, n2, el, parentComponent)
     patchProps(el, oldProps, newProps)
+  }
+
+  function patchChildren (n1, n2, container, parentComponent) {
+    const prevShapeFlag = n1.shapeFlag
+    const c1 = n1.children
+    const { shapeFlag } = n2
+    const c2 = n2.children
+
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      //   // 1. 把老的children清空
+      //   unmountChildren(n1.children)
+      //   // 2. 设置text
+      //   hostSetElementText(container, c2)
+      // } else {
+      //   if (c1 !== c2) {
+      //     hostSetElementText(container, c2)
+      //   }
+      // }
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 1. 把老的children清空
+        unmountChildren(n1.children)
+      }
+      // 2. 设置text
+      if (c1 !== c2) {
+        hostSetElementText(container, c2)
+      }
+    } else {
+      if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostSetElementText(container, '')
+        mountChildren(c2, container, parentComponent)
+      }
+    }
+  }
+
+  function unmountChildren (children) {
+    for (const child of children) {
+      const el = child.el
+      hostRemove(el)
+    }
   }
 
   function patchProps (el, oldProps, newProps) {
@@ -108,7 +151,7 @@ export const createRenderer = (options) => {
       el.textContent = children
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       // array_children
-      mountChildren(vnode, el, parentComponent)
+      mountChildren(vnode.children, el, parentComponent)
     }
 
     for (const key in props) {
@@ -155,8 +198,8 @@ export const createRenderer = (options) => {
     })
   }
 
-  function mountChildren (vnode, container, parentComponent) {
-    vnode.children.forEach(child => {
+  function mountChildren (children, container, parentComponent) {
+    children.forEach(child => {
       patch(null, child, container, parentComponent)
     })
   }
