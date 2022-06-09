@@ -18,8 +18,9 @@ export const patchProp = (el, key, prevVal, nextVal) => {
   }
 }
 
-export const insert = (el, parent) => {
-  parent.append(el)
+export const insert = (child, parent, anchor = null) => {
+  // parent.append(el)
+  parent.insertBefore(child, anchor)
 }
 
 export const remove = (child) => {
