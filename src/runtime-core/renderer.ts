@@ -198,7 +198,7 @@ export const createRenderer = (options) => {
         if (prevChild.key != null) {
           newIndex = keyToNewIndex.get(prevChild.key)
         } else {
-          for (let j = s2; j < e2; j++) {
+          for (let j = s2; j <= e2; j++) {
             if (isSameVNodeType(prevChild, c2[j])) {
               newIndex = j
               break

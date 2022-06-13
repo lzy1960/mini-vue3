@@ -181,25 +181,40 @@ import { h, ref } from "../../lib/guide-mini-vue3.esm.js"
 // a b (c d e z) f g
 // a b (d c y e) f g
 // d节点在老节点中不存在，新的里面存在，所以需要创建
+// const prevChildren = [
+//   h('p', { key: 'A' }, 'A'),
+//   h('p', { key: 'B' }, 'B'),
+//   h('p', { key: 'C' }, 'C'),
+//   h('p', { key: 'D' }, 'D'),
+//   h('p', { key: 'E' }, 'E'),
+//   h('p', { key: 'Z' }, 'Z'),
+//   h('p', { key: 'F' }, 'F'),
+//   h('p', { key: 'G' }, 'G'),
+// ]
+// const nextChildren = [
+//   h('p', { key: 'A' }, 'A'),
+//   h('p', { key: 'B' }, 'B'),
+//   h('p', { key: 'D' }, 'D'),
+//   h('p', { key: 'C' }, 'C'),
+//   h('p', { key: 'Y' }, 'Y'),
+//   h('p', { key: 'E' }, 'E'),
+//   h('p', { key: 'F' }, 'F'),
+//   h('p', { key: 'G' }, 'G'),
+// ]
+
+// fix
+// C没有key，看到的结果也是对的，但是会先删除再创建
 const prevChildren = [
   h('p', { key: 'A' }, 'A'),
+  h('p', {}, 'C'),
   h('p', { key: 'B' }, 'B'),
-  h('p', { key: 'C' }, 'C'),
   h('p', { key: 'D' }, 'D'),
-  h('p', { key: 'E' }, 'E'),
-  h('p', { key: 'Z' }, 'Z'),
-  h('p', { key: 'F' }, 'F'),
-  h('p', { key: 'G' }, 'G'),
 ]
 const nextChildren = [
   h('p', { key: 'A' }, 'A'),
   h('p', { key: 'B' }, 'B'),
+  h('p', {}, 'C'),
   h('p', { key: 'D' }, 'D'),
-  h('p', { key: 'C' }, 'C'),
-  h('p', { key: 'Y' }, 'Y'),
-  h('p', { key: 'E' }, 'E'),
-  h('p', { key: 'F' }, 'F'),
-  h('p', { key: 'G' }, 'G'),
 ]
 
 export default {
