@@ -179,7 +179,22 @@ export const createRenderer = (options) => {
       let patched = 0
 
       const keyToNewIndex = new Map()
-      const newIndexToOldIndexMap = Array(toBePatched).fill(0)
+
+      // 这里涉及到性能问题
+      // Array.prototype.fill(0) 的性能 < for循环
+      // vue3源码：https://github.com/vuejs/core/blob/main/packages/runtime-core/src/renderer.ts#L1911
+      // 虽然这里可以精简代码
+      // 但是 diff 算法的性能的优先级更高
+
+      // console.time('fill')
+      // const newIndexToOldIndexMap = new Array(toBePatched).fill(0)
+      // console.timeEnd('fill')
+
+      // console.time('for')
+      const newIndexToOldIndexMap = new Array(toBePatched)
+      for (i = 0; i < toBePatched; i++) newIndexToOldIndexMap[i] = 0
+      // console.timeEnd('for')
+
       let moved = false
       let maxNewIndexSoFar = 0
 
