@@ -8,13 +8,13 @@ const enum TagType {
 export const baseParse = (content: string) => {
   const context = createParserContext(content)
 
-  return createRoot(parseChildren(context, ''))
+  return createRoot(parseChildren(context, []))
 }
 
-function parseChildren (context, parentTag) {
+function parseChildren (context, ancestors) {
   let nodes: any[] = []
 
-  while (!isEnd(context, parentTag)) {
+  while (!isEnd(context, ancestors)) {
     let node
     const s = context.source
     if (s.startsWith('{{')) {
@@ -23,7 +23,7 @@ function parseChildren (context, parentTag) {
     } else if (s[0] === '<') {
       // element
       if (/[a-z]/i.test(s[1])) {
-        node = parseElement(context)
+        node = parseElement(context, ancestors)
       }
     }
 
@@ -38,22 +38,35 @@ function parseChildren (context, parentTag) {
   return nodes
 }
 
-function isEnd (context, parentTag) {
+function isEnd (context, ancestors) {
   const s = context.source
-  if (parentTag && s.startsWith(`</${parentTag}>`)) {
-    return true
+
+  if (s.startsWith('</')) {
+    for (let i = 0; i < ancestors.length; i++) {
+      const tag = ancestors[i].tag
+      if (startsWithEndTagOpen(s, tag)) {
+        return true
+      }
+    }
   }
+
+  // if (ancestors && s.startsWith(`</${ancestors}>`)) {
+  //   return true
+  // }
   return !s
 }
 
 function parseText (context) {
   let endIndex = context.source.length
-  const endToken = '{{'
-  const index = context.source.indexOf(endToken)
-
-  if (index !== -1) {
-    endIndex = index
+  const endTokens = ['{{', '<']
+  let index = 0
+  for (let i = 0; i < endTokens.length; i++) {
+    index = context.source.indexOf(endTokens[i])
+    if (index !== -1 && endIndex > index) {
+      endIndex = index
+    }
   }
+
   // 1. 获取text
   let content = parseTextData(context, endIndex)
   console.log('==============', content)
@@ -72,16 +85,27 @@ function parseTextData (context, length) {
   return content
 }
 
-function parseElement (context) {
+function parseElement (context, ancestors) {
   // 1. 解析tag
   const element: any = parseTag(context, TagType.START)
 
-  element.children = parseChildren(context, element.tag)
+  ancestors.push(element)
+  element.children = parseChildren(context, ancestors)
+  ancestors.pop()
 
-  parseTag(context, TagType.END)
+  if (startsWithEndTagOpen(context.source, element.tag)) {
+    parseTag(context, TagType.END)
+  } else {
+    throw new Error('缺少结束标签: ' + element.tag)
+  }
+
   console.log('----------', context.source)
 
   return element
+}
+
+function startsWithEndTagOpen (source, tag) {
+  return source.slice(2, 2 + tag.length) === tag
 }
 
 function parseTag (context, type: TagType) {
