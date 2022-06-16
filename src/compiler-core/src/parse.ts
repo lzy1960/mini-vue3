@@ -8,37 +8,55 @@ const enum TagType {
 export const baseParse = (content: string) => {
   const context = createParserContext(content)
 
-  return createRoot(parseChildren(context))
+  return createRoot(parseChildren(context, ''))
 }
 
-function parseChildren (context) {
+function parseChildren (context, parentTag) {
   let nodes: any[] = []
 
-  let node
-  const s = context.source
-  if (s.startsWith('{{')) {
-    // 插值
-    node = parseInterpolation(context)
-  } else if (s[0] === '<') {
-    // element
-    if (/[a-z]/i.test(s[1])) {
-      node = parseElement(context)
+  while (!isEnd(context, parentTag)) {
+    let node
+    const s = context.source
+    if (s.startsWith('{{')) {
+      // 插值
+      node = parseInterpolation(context)
+    } else if (s[0] === '<') {
+      // element
+      if (/[a-z]/i.test(s[1])) {
+        node = parseElement(context)
+      }
     }
-  }
 
-  // 处理text
-  if (!node) {
-    node = parseText(context)
-  }
+    // 处理text
+    if (!node) {
+      node = parseText(context)
+    }
 
-  nodes.push(node)
+    nodes.push(node)
+  }
 
   return nodes
 }
 
+function isEnd (context, parentTag) {
+  const s = context.source
+  if (parentTag && s.startsWith(`</${parentTag}>`)) {
+    return true
+  }
+  return !s
+}
+
 function parseText (context) {
+  let endIndex = context.source.length
+  const endToken = '{{'
+  const index = context.source.indexOf(endToken)
+
+  if (index !== -1) {
+    endIndex = index
+  }
   // 1. 获取text
-  let content = parseTextData(context, context.source.length)
+  let content = parseTextData(context, endIndex)
+  console.log('==============', content)
 
   return {
     type: NodeTypes.TEXT,
@@ -56,7 +74,9 @@ function parseTextData (context, length) {
 
 function parseElement (context) {
   // 1. 解析tag
-  const element = parseTag(context, TagType.START)
+  const element: any = parseTag(context, TagType.START)
+
+  element.children = parseChildren(context, element.tag)
 
   parseTag(context, TagType.END)
   console.log('----------', context.source)

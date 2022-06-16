@@ -22,7 +22,8 @@ describe('Parse', () => {
 
       expect(ast.children[0]).toStrictEqual({
         type: NodeTypes.ELEMENT,
-        tag: 'div'
+        tag: 'div',
+        children: []
       })
     });
   });
@@ -36,4 +37,22 @@ describe('Parse', () => {
       })
     });
   });
+  test('hello world', () => {
+    const ast: any = baseParse('<div>h1,{{ message }}</div>')
+
+    expect(ast.children[0]).toStrictEqual({
+      type: NodeTypes.ELEMENT,
+      tag: 'div',
+      children: [{
+        type: NodeTypes.TEXT,
+        content: 'h1,'
+      }, {
+        type: NodeTypes.INTERPOLATION,
+        content: {
+          type: NodeTypes.SIMPLE_EXPRESSION,
+          content: 'message'
+        }
+      }]
+    })
+  })
 });
