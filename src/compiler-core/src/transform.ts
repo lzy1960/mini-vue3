@@ -1,8 +1,13 @@
-export const transform = (root, options) => {
+export const transform = (root, options = {}) => {
   const context = createTransformContext(root, options)
   // 1. 遍历 - 深度优先搜索
   traverseNode(root, context)
-  // 2. 修改 text content
+
+  createRootCodegen(root)
+}
+
+function createRootCodegen (root) {
+  root.codegenNode = root.children[0]
 }
 
 function createTransformContext (root: any, options: any) {
