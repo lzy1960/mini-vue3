@@ -1,3 +1,4 @@
+import { isString } from "../../shared"
 import { NodeTypes } from "./ast"
 import { CREATE_ELEMENT_VNODE, helperMapName, TO_DISPLAY_STRING } from "./runtimeHelpers"
 
@@ -10,7 +11,6 @@ export const generate = (ast) => {
   const functionName = 'render'
   const args = ['_ctx', '_cache']
   const signature = args.join(', ')
-  console.log(ast)
 
   push(`function ${functionName}(${signature}) {`)
   push('return ')
@@ -64,14 +64,54 @@ function genNode (node, context) {
       genElement(node, context)
       break
 
+    case NodeTypes.COMPOUND_EXPRESSION:
+      genCompoundExpression(node, context)
+      break
+
     default:
       break;
   }
 }
 
+function genCompoundExpression (node, context) {
+  const { push } = context
+  const { children } = node
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i]
+    if (isString(child)) {
+      push(child)
+    } else {
+      genNode(child, context)
+    }
+  }
+}
+
 function genElement (node, context) {
   const { push, helper } = context
-  push(`${helper(CREATE_ELEMENT_VNODE)}("${node.tag}")`)
+  const { tag, children, props } = node
+  push(`${helper(CREATE_ELEMENT_VNODE)}(`)
+  genNodeList(genNullable([tag, props, children]), context)
+  push(')')
+}
+
+function genNullable (args) {
+  return args.map(arg => arg || 'null')
+}
+
+function genNodeList (nodes, context) {
+  const { push } = context
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]
+    if (isString(node)) {
+      push(node)
+    } else {
+      genNode(node, context)
+    }
+
+    if (i < nodes.length - 1) {
+      push(', ')
+    }
+  }
 }
 
 function genExpression (node: any, context: any) {
@@ -81,7 +121,6 @@ function genExpression (node: any, context: any) {
 
 function genInterpolation (node: any, context: any) {
   const { push, helper } = context
-  console.log(node)
   push(`${helper(TO_DISPLAY_STRING)}(`)
   genNode(node.content, context)
   push(')')

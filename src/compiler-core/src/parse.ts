@@ -69,7 +69,6 @@ function parseText (context) {
 
   // 1. 获取text
   let content = parseTextData(context, endIndex)
-  console.log('==============', content)
 
   return {
     type: NodeTypes.TEXT,
@@ -99,7 +98,6 @@ function parseElement (context, ancestors) {
     throw new Error('缺少结束标签: ' + element.tag)
   }
 
-  console.log('----------', context.source)
 
   return element
 }
