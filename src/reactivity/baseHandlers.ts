@@ -9,7 +9,8 @@ const shallowReadonlyGet = createGetter(true, true)
 
 export const enum ReactiveFlags {
   IS_REACTIVE = 'is_reactive',
-  IS_READONLY = 'is_readonly'
+  IS_READONLY = 'is_readonly',
+  RAW = "raw"
 }
 
 function createGetter (isReadonly = false, isShallow = false) {
@@ -18,6 +19,8 @@ function createGetter (isReadonly = false, isShallow = false) {
       return !isReadonly
     } else if (key === ReactiveFlags.IS_READONLY) {
       return isReadonly
+    } else if (key === ReactiveFlags.RAW) {
+      return target
     }
 
     const res = Reflect.get(target, key)

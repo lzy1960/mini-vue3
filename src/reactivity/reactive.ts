@@ -25,6 +25,11 @@ export const isProxy = (value) => {
   return isReadonly(value) || isReactive(value)
 };
 
+export const toRaw = (observed) => {
+  const raw = observed && observed[ReactiveFlags.RAW]
+  return raw ? toRaw(raw) : observed
+}
+
 function createActiveObject (raw: any, baseHandlers) {
   return new Proxy(raw, baseHandlers);
 }
