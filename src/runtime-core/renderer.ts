@@ -50,7 +50,7 @@ export const createRenderer = (options) => {
   };
 
   function processFragment (n1, n2: any, container: any, parentComponent: any, anchor) {
-    mountChildren(n2, container, parentComponent, anchor)
+    mountChildren(n2.children, container, parentComponent, anchor)
   }
 
   function processText (n1, n2: any, container: any) {
