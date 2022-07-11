@@ -26,6 +26,6 @@ const flushJobs = () => {
   }
 }
 
-export const nextTick = (fn) => {
+export const nextTick = (fn?) => {
   return fn ? p.then(fn) : p
 }
