@@ -1,4 +1,4 @@
-import { reactive, isReactive, isProxy, toRaw } from '../reactive';
+import { reactive, isReactive, isProxy, toRaw, shallowReadonly, readonly, shallowReactive } from '../reactive';
 
 describe('reactive', () => {
   it('happy path', () => {
@@ -28,10 +28,10 @@ describe('reactive', () => {
     expect(isReactive(observed.nested)).toBe(true)
     expect(isReactive(observed.array[0])).toBe(true)
   });
-  it('toRaw', () => {
-    const original = { foo: 1 }
-    const observed = reactive(original)
-    expect(toRaw(observed)).toBe(original)
-    expect(toRaw(original)).toBe(original)
-  });
+  it('happy path', () => {
+    const original = { foo: { bar: 1 } }
+    const observed = shallowReactive(original)
+    expect(isReactive(observed)).toBe(true)
+    expect(isReactive(observed.foo)).toBe(false)
+  })
 });

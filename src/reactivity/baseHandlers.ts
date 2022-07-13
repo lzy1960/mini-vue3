@@ -6,6 +6,7 @@ const get = createGetter()
 const set = createSetter()
 const readonlyGet = createGetter(true)
 const shallowReadonlyGet = createGetter(true, true)
+const shallowMutableGet = createGetter(false, true)
 
 export const enum ReactiveFlags {
   IS_REACTIVE = 'is_reactive',
@@ -47,7 +48,7 @@ function createSetter () {
   }
 }
 
-export const mutibleHandlers = {
+export const mutableHandlers = {
   get,
   set
 }
@@ -63,3 +64,7 @@ export const readonlyHandlers = {
 export const shallowReadonlyHandlers = extend({}, readonlyHandlers, {
   get: shallowReadonlyGet
 })
+
+export const shallowReactiveHandlers = extend({}, mutableHandlers, {
+  get: shallowMutableGet
+});
